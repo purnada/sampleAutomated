@@ -1,0 +1,105 @@
+@extends('layouts.admin')
+@section('title')
+	Create {{ Str::headline(request()->segment(2)) }}
+@stop
+@section('content')
+
+<div class="block justify-between page-header sm:flex">
+    <div>
+        <h3 class="text-gray-700 hover:text-gray-900 dark:text-white dark:hover:text-white text-2xl font-medium">Create {{ Str::headline(request()->segment(2)) }}</h3>
+    </div>
+    <ol class="flex items-center whitespace-nowrap min-w-0">
+        <li class="text-sm">
+            <a class="flex items-center font-semibold text-primary hover:text-primary dark:text-primary truncate" href="{{ route('admin.municipalities.index') }}">
+                                    {{ Str::headline(request()->segment(2)) }} <i class="ti ti-chevrons-right flex-shrink-0 mx-3 overflow-visible text-gray-300 dark:text-gray-300 rtl:rotate-180"></i>
+            </a>
+        </li>
+        <li class="text-sm text-gray-500 hover:text-primary dark:text-white/70" aria-current="page">Create {{ Str::headline(request()->segment(2)) }}</li>
+    </ol>
+</div>
+
+<div class="grid grid-cols-12 gap-6">
+    <div class="col-span-12">
+        <div class="box">
+            <div class="box-header"><h5 class="box-title">{{ Str::headline(request()->segment(2)) }}</h5></div>
+            <div class="box-body">
+                <form method="POST" action="{{ route('admin.municipalities.store') }}" enctype="multipart/form-data">
+		            @csrf
+                    <div class="grid lg:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="ti-form-label mb-0">Title</label>
+                            <input id="title" type="text" name="title" class="my-auto ti-form-input @error('title') border-red-500 @enderror" placeholder="Title"  value="{{ old('title') }}" />
+                            @error('title')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="space-y-2">
+                            <label class="ti-form-label mb-0">SEO URL</label>
+                            <input id="seo_url" type="text" name="seo_url" class="my-auto ti-form-input @error('seo_url') border-red-500 @enderror" placeholder="seo-url"  value="{{ old('seo_url') }}" />
+                            @error('seo_url')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="space-y-2">
+                            <label class="ti-form-label mb-0">Meta Title</label>
+                            <input id="meta_title" name="meta_title" type="text" class="my-auto ti-form-input @error('meta_title') border-red-500 @enderror" placeholder="Meta Title"  value="{{ old('meta_title') }}" />
+                            @error('meta_title')
+                                <span class=" text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="space-y-2">
+                            <label class="ti-form-label mb-0">Meta Keyword</label>
+                            <input id="meta_keyword" name="meta_title" type="text" class="my-auto ti-form-input @error('meta_keyword') border-red-500 @enderror" placeholder="Meta Keyword"  value="{{ old('meta_keyword') }}" />
+                            @error('meta_keyword')
+                                <span class=" text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="space-y-2">
+                            <label class="ti-form-label mb-0">Meta Description</label>
+                            <input id="meta_description" name="meta_description" type="text" class="my-auto ti-form-input @error('meta_description') border-red-500 @enderror" placeholder="Meta Description"  value="{{ old('meta_description') }}" />
+                            @error('meta_description')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="space-y-2">
+                            <label class="ti-form-label mb-0">Image</label>
+                            <input id="image" type="file" name="image" class="my-auto block w-full border border-gray-200 focus:shadow-sm dark:focus:shadow-white/10 rounded-sm text-sm focus:z-10 focus:outline-0 focus:border-gray-200 dark:focus:border-white/10 dark:border-white/10 dark:text-white/70
+                                      file:bg-transparent file:border-0
+                                      file:bg-gray-100 ltr:file:mr-4 rtl:file:ml-4
+                                      file:py-3 file:px-4
+                                      dark:file:bg-black/20 dark:file:text-white/70 @error('image') border-red-500 @enderror" placeholder="Image"  value="{{ old('image') }}" />
+                            @error('image')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <label class="ti-form-label mt-5">Description</label>
+                    <textarea id="description" name="description" class="ti-form-input @error('image') border-red-500 @enderror">{{ old('description') }}</textarea>
+                            @error('description')
+                                <span class="text-red-500 text-xs">{{ $message }}</span>
+                            @enderror
+
+                    <button value="submit" type="submit" class="ti-btn ti-btn-primary ti-custom-validate-btn">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+@section('scripts')
+<script src="{{asset('assets/libs/ckeditor/ckeditor.js')}}"></script>
+<script type="text/javascript">
+        $('#title').blur(function(){
+            var data = $(this).val();
+            var se_url = data.replace(/ /g,"-");
+            $('#seo_url').val(se_url);
+            $('#meta_title').val(data);
+            $('#meta_keyword').val(data);
+        });
+        CKEDITOR.replace( 'description', {
+            filebrowserUploadUrl: "{{route('admin.ckeditor.upload', ['_token' => csrf_token() ])}}",
+            filebrowserUploadMethod: 'form'
+        } );
+</script>
+@endsection

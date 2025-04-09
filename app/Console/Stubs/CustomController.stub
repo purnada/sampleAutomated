@@ -1,0 +1,164 @@
+<?php
+
+namespace App\Http\Controllers\folderDir;
+
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\Dummy;
+use App\Http\Requests\folderDir\DummyRequest;
+use Illuminate\Support\Str;
+
+class DummyController extends Controller
+{
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request)
+    {
+
+        $authUser = $request->user();
+        if (!$authUser->can('view dummy')) {
+            $notification = Str::toastMsg('You do not have permission to view dummy!', 'warning');
+            return redirect()->route('admin.dashboard')->with($notification);
+        }
+        $query = Dummy::query();
+        $filter = $this->filterQuery($query);
+        $dummies = $filter->latest('id')->paginate(15);
+        return view('{{$viewDir}}.pages.dummies.index',compact('dummies'));
+
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create(Request $request)
+    {
+        $authUser = $request->user();
+        if (!$authUser->can('create dummy')) {
+            $notification = Str::toastMsg('You do not have permission to create dummy!', 'warning');
+            return redirect()->route('admin.dashboard')->with($notification);
+        }
+
+        return view('{{$viewDir}}.pages.dummies.create');
+
+    }
+
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \App\Http\Requests\Dummy\DummyRequest $request
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function store(DummyRequest $request)
+    {
+        $authUser = $request->user();
+        if (!$authUser->can('create dummy')) {
+            $notification = Str::toastMsg('You do not have permission to create dummy!', 'warning');
+            return redirect()->route('admin.dashboard')->with($notification);
+        }
+
+        Dummy::create($request->validated());
+
+        $notification = Str::toastMsg(config('custom.msg.create'),'success');
+
+        return redirect()->route('admin.dummies.index')->with($notification);
+
+    }
+
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Dummy  $dummy
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Dummy $dummy, Request $request)
+    {
+        $authUser = $request->user();
+
+        if(in_array('view dummy',$this->getPermissionsViaRole()) || $authUser->hasPermissionTo('view dummy'))
+        {
+            return view('{{$viewDir}}.pages.dummies.show',compact('dummy'));
+        }
+
+        $notification = Str::toastMsg('You do not have permission to view dummy!','warning');
+        return redirect()->route('admin.dummies.index')->with($notification);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \App\Http\Requests\DummyRequest $request
+     *
+     * @return \Illuminate\Http\Response
+     */
+
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Dummy  $dummy
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Dummy $dummy, Request $request)
+    {
+        $authUser = $request->user();
+        if (!$authUser->can('edit dummy')) {
+            $notification = Str::toastMsg('You do not have permission to edit dummy!', 'warning');
+            return redirect()->route('admin.dashboard')->with($notification);
+        }
+
+        return view('{{$viewDir}}.pages.dummies.edit',compact('dummy'));
+    }
+
+    public function update(DummyRequest $request, Dummy $dummy)
+    {
+        $authUser = $request->user();
+        if (!$authUser->can('edit dummy')) {
+            $notification = Str::toastMsg('You do not have permission to edit dummy!', 'warning');
+            return redirect()->route('admin.dashboard')->with($notification);
+        }
+
+        $dummy->update($request->validated());
+        $notification = Str::toastMsg(config('custom.msg.update'),'success');
+        return redirect()->route('admin.dummies.index')->with($notification);
+
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\Dummy  $dummy
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Dummy $dummy, Request $request)
+    {
+        $authUser = $request->user();
+        if (!$authUser->can('edit dummy')) {
+            $notification = Str::toastMsg('You do not have permission to delete dummy!','warning');
+            return response($notification, 403);
+        }
+
+        $dummy->delete();
+        $notification = Str::toastMsg(config('custom.msg.delete'),'success');
+        return response($notification);
+
+    }
+
+    private function filterQuery($query)
+    {
+        if(request()->filled('title')) {
+             $query->where('title','like', '%'. request()->title.'%');
+        }
+
+        return $query;
+    }
+
+}

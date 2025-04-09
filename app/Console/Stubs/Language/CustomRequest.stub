@@ -1,0 +1,63 @@
+<?php
+
+namespace App\Http\Requests\Admin;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class DummyRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     */
+    public function rules(): array
+    {
+        $rules = [
+
+            'detail.*.title' => ['required','string'],
+            'detail.*.description' => ['required','string'],
+            'detail.*.meta_title' => ['required','string'],
+            'detail.*.meta_keyword' => ['nullable','string'],
+            'detail.*.meta_description' => ['nullable','string'],
+
+        ];
+        if($this->getMethod() == 'POST')
+        {
+            $rules += [
+                'image' => ['required','file','max:1024','mimes:png,jpg,jpeg,svg,webp'],
+                'seo_url' => ['required','string','unique:dummies'],
+            ];
+        }
+        if($this->getMethod() == 'PUT')
+        {
+            $rules += [
+                'image' => ['nullable','file','max:1024','mimes:png,jpg,jpeg,svg,webp'],
+                'seo_url' => ['required','string','unique:dummies,seo_url,'.$this->dummy->id.',id'],
+            ];
+        }
+        return $rules;
+    }
+
+    public function messages()
+    {
+        return [
+            'detail.*.title.required' => 'Title Must be required',
+            'detail.*.title.string' => 'Title Must be string',
+            'detail.*.description.required' => 'Description Must be required',
+            'detail.*.description.string' => 'Description Must be string',
+            'detail.*.meta_title.required' => 'Meta Title Must be required',
+            'detail.*.meta_title.string' => 'Meta Title Must be string',
+            'detail.*.meta_keyword.string' => 'Meta Keyword Must be string',
+            'detail.*.meta_keyword.string' => 'Meta Description Must be string',
+        ];
+    }
+}

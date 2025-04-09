@@ -1,0 +1,63 @@
+<?php
+
+namespace App\Models;
+
+use App\Library\ImageTool;
+use Spatie\MediaLibrary\HasMedia;
+use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+
+class Dummy extends Model implements HasMedia
+{
+    use HasFactory, InteractsWithMedia;
+
+    protected $fillable = ['seo_url','title','description','meta_title','meta_keyword','meta_description'];
+
+    public function camelDetail()
+    {
+        return $this->hasOne(DummyDetail::class);
+    }
+
+
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('dummy_image')->singleFile();
+    }
+
+    public function registerMediaConversions(Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+                ->performOnCollections('dummy_image')
+              ->width(300)
+              ->height(300)
+              ->sharpen(10);
+
+        $this->addMediaConversion('thumb-cropped')
+            ->performOnCollections('dummy_image')
+            ->crop('crop-center', 400, 400);
+    }
+
+
+    public function getImageThumbPathAttribute()
+    {
+        if($this->hasMedia('dummy_image'))
+        {
+            return $this->getFirstMedia('dummy_image')->getUrl('thumb');
+        }
+        return ImageTool::mycrop('placeholder.png',100,100);
+    }
+
+    public function getImageThumbAttribute()
+    {
+        if($this->hasMedia('dummy_image'))
+        {
+            return $this->getFirstMedia('dummy_image')->getUrl('thumb');
+        }
+        return null;
+    }
+
+
+}
